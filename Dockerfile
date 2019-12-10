@@ -1,8 +1,8 @@
-FROM lambci/lambda:build-ruby2.5
+FROM lambci/lambda-base-2:build
 
 WORKDIR /build
 
-ARG VIPS_VERSION=8.7.4
+ARG VIPS_VERSION=8.8.3
 
 ENV WORKDIR="/build"
 ENV INSTALLDIR="/opt"
@@ -14,6 +14,16 @@ RUN yum install -y \
   gtk-doc \
   gobject-introspection \
   gobject-introspection-devel
+
+RUN yum install -y expat-devel
+RUN mkdir /usr/local/share/imagemagick 
+COPY Makefile_ImageMagick /usr/local/share/imagemagick/Makefile
+WORKDIR /usr/local/share/imagemagick
+RUN make all && \
+  echo /opt/lib > /etc/ld.so.conf.d/libmagick.conf && \
+  ldconfig
+
+WORKDIR ${WORKDIR}
 
 # Clone repo and checkout version tag.
 #
